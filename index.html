@@ -9,10 +9,42 @@
         display: block;
         margin: 0 auto;
       }
+      #controls {
+        display: none; /* Domyślnie ukryte */
+        text-align: center;
+        margin-top: 10px;
+      }
+      .control-button {
+        width: 60px;
+        height: 60px;
+        margin: 5px;
+        font-size: 24px;
+      }
+      #control-pad {
+        display: inline-block;
+      }
+      #attack-button {
+        width: 100px;
+        height: 60px;
+        font-size: 24px;
+      }
     </style>
   </head>
   <body>
     <canvas id="gameCanvas" width="800" height="600"></canvas>
+    <div id="controls">
+      <div id="control-pad">
+        <div>
+          <button class="control-button" id="up-button">▲</button>
+        </div>
+        <div>
+          <button class="control-button" id="left-button">◀</button>
+          <button class="control-button" id="down-button">▼</button>
+          <button class="control-button" id="right-button">▶</button>
+        </div>
+      </div>
+      <button id="attack-button">Atak</button>
+    </div>
     <script src="game.js"></script>
   </body>
 </html>

@@ -3,6 +3,49 @@ const ctx = canvas.getContext("2d");
 
 const keys = {};
 
+// Wykrywanie urządzenia mobilnego
+function isMobileDevice() {
+  return /Mobi|Android/i.test(navigator.userAgent);
+}
+
+if (isMobileDevice()) {
+  document.getElementById("controls").style.display = "block";
+
+  // Obsługa przycisków sterowania
+  const upButton = document.getElementById("up-button");
+  const downButton = document.getElementById("down-button");
+  const leftButton = document.getElementById("left-button");
+  const rightButton = document.getElementById("right-button");
+  const attackButton = document.getElementById("attack-button");
+
+  upButton.addEventListener("touchstart", () => (keys[38] = true));
+  upButton.addEventListener("touchend", () => (keys[38] = false));
+
+  downButton.addEventListener("touchstart", () => (keys[40] = true));
+  downButton.addEventListener("touchend", () => (keys[40] = false));
+
+  leftButton.addEventListener("touchstart", () => (keys[37] = true));
+  leftButton.addEventListener("touchend", () => (keys[37] = false));
+
+  rightButton.addEventListener("touchstart", () => (keys[39] = true));
+  rightButton.addEventListener("touchend", () => (keys[39] = false));
+
+  attackButton.addEventListener("touchstart", () => {
+    if (!gameOver) {
+      hero.attackCharging = true;
+      hero.chargeTime = 0;
+    }
+    keys[32] = true;
+  });
+  attackButton.addEventListener("touchend", () => {
+    keys[32] = false;
+    if (hero.attackCharging) {
+      heroAttack();
+      hero.attackCharging = false;
+    }
+  });
+}
+
 document.addEventListener("keydown", function (e) {
   if (e.keyCode === 32 && !keys[32]) {
     // Spacja

@@ -3,48 +3,74 @@
   <head>
     <meta charset="UTF-8" />
     <title>Gra 2D</title>
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <!-- Zapobiega zoomowaniu -->
     <style>
+      body {
+        margin: 0;
+        padding: 0;
+        user-select: none; /* Zapobiega zaznaczaniu tekstu */
+        -webkit-user-select: none;
+        -ms-user-select: none;
+        overflow: hidden;
+      }
       canvas {
         background-color: #ccffcc; /* Pastelowo zielone tło */
         display: block;
         margin: 0 auto;
+        touch-action: none; /* Zapobiega domyślnym akcjom dotykowym */
       }
-      #controls {
+      #joystick-container {
+        position: absolute;
+        bottom: 20px;
+        left: 20px;
+        width: 150px; /* Zwiększona wielkość dla wygody */
+        height: 150px;
+        border-radius: 50%;
+        background-color: rgba(0, 0, 0, 0.2);
+        touch-action: none; /* Zapobiega domyślnym akcjom dotykowym */
         display: none; /* Domyślnie ukryte */
-        text-align: center;
-        margin-top: 10px;
       }
-      .control-button {
-        width: 60px;
-        height: 60px;
-        margin: 5px;
-        font-size: 24px;
-      }
-      #control-pad {
-        display: inline-block;
+      #joystick {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 80px; /* Zwiększona wielkość dla wygody */
+        height: 80px;
+        margin-left: -40px;
+        margin-top: -40px;
+        border-radius: 50%;
+        background-color: rgba(0, 0, 0, 0.5);
+        touch-action: none; /* Zapobiega domyślnym akcjom dotykowym */
       }
       #attack-button {
+        position: absolute;
+        bottom: 40px;
+        right: 20px;
         width: 100px;
-        height: 60px;
+        height: 100px;
+        border-radius: 50%;
         font-size: 24px;
+        background-color: rgba(255, 0, 0, 0.5);
+        touch-action: none; /* Zapobiega domyślnym akcjom dotykowym */
+        display: none; /* Domyślnie ukryte */
+        user-select: none; /* Zapobiega zaznaczaniu tekstu */
+        -webkit-user-select: none;
+        -ms-user-select: none;
       }
     </style>
   </head>
   <body>
-    <canvas id="gameCanvas" width="800" height="600"></canvas>
-    <div id="controls">
-      <div id="control-pad">
-        <div>
-          <button class="control-button" id="up-button">▲</button>
-        </div>
-        <div>
-          <button class="control-button" id="left-button">◀</button>
-          <button class="control-button" id="down-button">▼</button>
-          <button class="control-button" id="right-button">▶</button>
-        </div>
-      </div>
-      <button id="attack-button">Atak</button>
+    <canvas id="gameCanvas"></canvas>
+    <!-- Wirtualny joystick dla urządzeń mobilnych -->
+    <div id="joystick-container">
+      <div id="joystick"></div>
     </div>
+    <!-- Przycisk ataku dla urządzeń mobilnych -->
+    <button id="attack-button">Atak</button>
     <script src="game.js"></script>
   </body>
 </html>

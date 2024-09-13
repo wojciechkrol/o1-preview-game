@@ -1,6 +1,14 @@
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
+// Dopasowanie canvas do okna
+function resizeCanvas() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+resizeCanvas();
+window.addEventListener("resize", resizeCanvas);
+
 const keys = {};
 
 // Wykrywanie urządzenia mobilnego
@@ -8,43 +16,123 @@ function isMobileDevice() {
   return /Mobi|Android/i.test(navigator.userAgent);
 }
 
+let joystickActive = false;
+let joystickMoveX = 0;
+let joystickMoveY = 0;
+let joystick = null;
+let joystickContainer = null;
+let attackButton = null;
+
 if (isMobileDevice()) {
-  document.getElementById("controls").style.display = "block";
+  joystickContainer = document.getElementById("joystick-container");
+  joystick = document.getElementById("joystick");
+  attackButton = document.getElementById("attack-button");
+  joystickContainer.style.display = "block";
+  attackButton.style.display = "block";
 
-  // Obsługa przycisków sterowania
-  const upButton = document.getElementById("up-button");
-  const downButton = document.getElementById("down-button");
-  const leftButton = document.getElementById("left-button");
-  const rightButton = document.getElementById("right-button");
-  const attackButton = document.getElementById("attack-button");
+  let joystickCenter = { x: 0, y: 0 };
 
-  upButton.addEventListener("touchstart", () => (keys[38] = true));
-  upButton.addEventListener("touchend", () => (keys[38] = false));
+  joystickContainer.addEventListener(
+    "touchstart",
+    function (e) {
+      e.preventDefault();
+      joystickActive = true;
+      const rect = joystickContainer.getBoundingClientRect();
+      joystickCenter = {
+        x: rect.left + rect.width / 2,
+        y: rect.top + rect.height / 2,
+      };
+    },
+    { passive: false }
+  );
 
-  downButton.addEventListener("touchstart", () => (keys[40] = true));
-  downButton.addEventListener("touchend", () => (keys[40] = false));
+  joystickContainer.addEventListener(
+    "touchmove",
+    function (e) {
+      e.preventDefault();
+      if (e.touches.length > 0) {
+        const touch = e.touches[0];
+        const deltaX = touch.clientX - joystickCenter.x;
+        const deltaY = touch.clientY - joystickCenter.y;
+        const distance = Math.hypot(deltaX, deltaY);
+        const maxDistance = joystickContainer.offsetWidth / 2;
+        const angle = Math.atan2(deltaY, deltaX);
+        const limitedDistance = Math.min(distance, maxDistance);
+        const xPos = Math.cos(angle) * limitedDistance;
+        const yPos = Math.sin(angle) * limitedDistance;
+        joystick.style.transform = `translate(${xPos}px, ${yPos}px)`;
 
-  leftButton.addEventListener("touchstart", () => (keys[37] = true));
-  leftButton.addEventListener("touchend", () => (keys[37] = false));
+        // Normalizacja ruchu
+        joystickMoveX = (deltaX / maxDistance) * hero.speed;
+        joystickMoveY = (deltaY / maxDistance) * hero.speed;
+      }
+    },
+    { passive: false }
+  );
 
-  rightButton.addEventListener("touchstart", () => (keys[39] = true));
-  rightButton.addEventListener("touchend", () => (keys[39] = false));
+  joystickContainer.addEventListener(
+    "touchend",
+    function (e) {
+      e.preventDefault();
+      joystickActive = false;
+      joystick.style.transform = `translate(0px, 0px)`;
+      joystickMoveX = 0;
+      joystickMoveY = 0;
+    },
+    { passive: false }
+  );
 
-  attackButton.addEventListener("touchstart", () => {
-    if (!gameOver) {
-      hero.attackCharging = true;
-      hero.chargeTime = 0;
-    }
-    keys[32] = true;
-  });
-  attackButton.addEventListener("touchend", () => {
-    keys[32] = false;
-    if (hero.attackCharging) {
-      heroAttack();
-      hero.attackCharging = false;
-    }
-  });
+  attackButton.addEventListener(
+    "touchstart",
+    (e) => {
+      e.preventDefault();
+      if (!gameOver) {
+        hero.attackCharging = true;
+        hero.chargeTime = 0;
+      }
+      keys[32] = true;
+    },
+    { passive: false }
+  );
+
+  attackButton.addEventListener(
+    "touchend",
+    (e) => {
+      e.preventDefault();
+      keys[32] = false;
+      if (hero.attackCharging) {
+        heroAttack();
+        hero.attackCharging = false;
+      }
+    },
+    { passive: false }
+  );
 }
+
+// Zapobieganie zaznaczaniu tekstu i zoomowaniu przy dwukrotnym tapnięciu
+document.addEventListener(
+  "touchstart",
+  function (e) {
+    if (e.touches.length > 1) {
+      e.preventDefault();
+    }
+  },
+  { passive: false }
+);
+
+document.addEventListener(
+  "touchmove",
+  function (e) {
+    if (e.touches.length > 1) {
+      e.preventDefault();
+    }
+  },
+  { passive: false }
+);
+
+document.addEventListener("gesturestart", function (e) {
+  e.preventDefault();
+});
 
 document.addEventListener("keydown", function (e) {
   if (e.keyCode === 32 && !keys[32]) {
@@ -408,10 +496,15 @@ function update() {
   let moveX = 0;
   let moveY = 0;
 
-  if (keys[37]) moveX -= hero.speed; // Lewo
-  if (keys[38]) moveY -= hero.speed; // Góra
-  if (keys[39]) moveX += hero.speed; // Prawo
-  if (keys[40]) moveY += hero.speed; // Dół
+  if (joystickActive) {
+    moveX = joystickMoveX;
+    moveY = joystickMoveY;
+  } else {
+    if (keys[37]) moveX -= hero.speed; // Lewo
+    if (keys[38]) moveY -= hero.speed; // Góra
+    if (keys[39]) moveX += hero.speed; // Prawo
+    if (keys[40]) moveY += hero.speed; // Dół
+  }
 
   // Sprawdzanie kolizji
   if (checkCollision(hero, moveX, 0)) {
@@ -579,4 +672,5 @@ for (let i = 0; i < 5; i++) {
 // Rozpoczęcie losowego spawn'owania potworów
 scheduleNextMonsterSpawn();
 
+// Rozpoczęcie pętli gry
 gameLoop();
